@@ -1,0 +1,139 @@
+<!doctype HTML>
+<html>
+	<head>
+		<link rel="stylesheet" href="css/smoothness/jquery-ui.css" />
+
+		<script type="text/javascript" src="js/jquery.js"> </script>
+		<script type="text/javascript" src="js/jquery-ui.js"> </script>
+		<script type="text/javascript" src="js/jsrender.js"> </script>
+		<script type="text/javascript" src="js/races.js"> </script>
+		<script type="text/javascript" src="js/skills.js"> </script>
+		<script type="text/javascript" src="js/bbf_utils.js"> </script>
+		<script type="text/javascript" src="js/widgets.js"> </script>
+
+		<style type="text/css">
+			.abilityBar { list-style-type: none; margin: 0; padding: 0; width: 80pt; float:left; }
+			.abilityBar li { 
+				margin: 3pt 3pt 3pt 0; 
+				padding: 1pt; 
+				width: 100pt; 
+				height: 30pt; 
+				font-size: 20pt; 
+				text-align: center; 
+			}
+			#scores .ui-icon { float:right; }
+			.BBFLabel { font-weight: bold; margin-right: .5em; }
+			.BBFValue { margin-right: 1em; }
+		</style>
+	</head>
+	<body>
+		<h3>Effective Scores</h3>
+		<p>
+			<span class="BBFWidget" attribute="STR"><span class="BBFLabel"> </span><span class="BBFValue"> </span></span>
+			<span class="BBFWidget" attribute="DEX"><span class="BBFLabel"> </span><span class="BBFValue"> </span></span>
+			<span class="BBFWidget" attribute="LOG"><span class="BBFLabel"> </span><span class="BBFValue"> </span></span>
+			<span class="BBFWidget" attribute="WIL"><span class="BBFLabel"> </span><span class="BBFValue"> </span></span>
+		</p>
+		<p>
+			<span class="BBFWidget" attribute="BP"><span class="BBFLabel"> </span><span class="BBFValue"> </span></span>
+			<span class="BBFWidget" attribute="INIT"><span class="BBFLabel"> </span><span class="BBFValue"> </span></span>
+		</p>		
+		<div id="steps">
+			<ul>
+				<li><a href="#step-abilities">Abilities</a></li>
+				<li><a href="#step-race">Race</a></li>
+				<li><a href="#step-skills">Skills</a></li>
+				<li><a href="#step-description">Description</a></li>
+			</ul>
+			<div id="step-abilities"> 
+				<ul class="abilityBar"><li>STR</li><li>DEX</li><li>LOG</li><li>WILL</li></ul>
+				<ul class="abilityBar" id="scores">
+					<li class="ui-state-default">
+						<span class="ui-icon ui-icon-arrowthick-2-n-s"> </span>
+						<span class="number">50</span>
+					</li>
+					<li class="ui-state-default">
+						<span class="ui-icon ui-icon-arrowthick-2-n-s"> </span>
+						<span class="number">55</span>
+					</li>
+					<li class="ui-state-default">
+						<span class="ui-icon ui-icon-arrowthick-2-n-s"> </span>
+						<span class="number">60</span>
+					</li>
+					<li class="ui-state-default">
+						<span class="ui-icon ui-icon-arrowthick-2-n-s"> </span>
+						<span class="number">65</span>
+					</li>
+				</ul>
+				<br clear="all"/>
+				<button type="button" id="standardArray">Use the standard array</button>
+				<button type="button" id="roll">I'm feeling brave.  Roll it!</button>
+			</div>
+			<div id="step-race">
+				<select id="race" class="ui-state-default"><option value="">-- Select One --</option> </select>
+				<div class="BBFWidget" race="1">
+					<h3 class="BBFName"> </h3>
+					<p class="BBFDescription"> </p>
+				</div>
+			</div>
+			<div id="step-skills"> 
+				mad skillzz
+			</div>
+			<div id="step-description"> 
+				awesomeness, described
+			</div>
+		</div>
+			
+		<script type="text/javascript">
+$(document).ready(function() {
+	var character = new BBF_Character();
+	
+	$( "#steps" ).tabs();
+	$( "#scores" ).sortable({
+		update: changeBaseScores
+	});
+	$("button").button();
+	
+	$('#standardArray').click( function(evt) {
+		var scoreValue = 50;
+		$('#scores .number').each( function() {
+			$(this).html( ''+scoreValue );
+			scoreValue += 5;
+		});
+		changeBaseScores();
+	});
+	
+	$('#roll').click( function(evt) {
+		$('#scores .number').each( function() {
+			var scoreValue = die(10) + die(10) + die(10) + die(10) + die(10) + 30;
+			$(this).html( ''+scoreValue );
+		});
+		changeBaseScores();
+	});	
+	
+	function changeBaseScores() {
+		var baseFields = $('#scores .number').toArray();
+		character.setAttribute('BaseSTR', $(baseFields[0]).text());
+		character.setAttribute('BaseDEX', $(baseFields[1]).text());
+		character.setAttribute('BaseLOG', $(baseFields[2]).text());
+		character.setAttribute('BaseWIL', $(baseFields[3]).text());
+		character.compute();
+	}
+	
+	var raceList = $('#race').change( function(evt) {
+		var key = $(this).val();
+		character.setRace( BBFDb.Races[key] );
+	});
+	
+	for (var raceKey in BBFDb.Races) {
+		var el = document.createElement('option');
+		el.appendChild( document.createTextNode( BBFDb.Races[raceKey].Name ) );
+		el.setAttribute('value', raceKey);
+		raceList.append(el);
+	}
+	
+	$.bbf.factory(character);
+});
+		</script>
+	</body>
+</html>
