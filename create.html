@@ -37,6 +37,7 @@
 		<p>
 			<span class="BBFWidget" attribute="BP"><span class="BBFLabel"> </span><span class="BBFValue"> </span></span>
 			<span class="BBFWidget" attribute="INIT"><span class="BBFLabel"> </span><span class="BBFValue"> </span></span>
+			<span class="BBFWidget" attribute="MOV"><span class="BBFLabel"> </span><span class="BBFValue"> </span></span>
 		</p>		
 		<div id="steps">
 			<ul>
@@ -70,7 +71,7 @@
 				<button type="button" id="roll">I'm feeling brave.  Roll it!</button>
 			</div>
 			<div id="step-race">
-				<select id="race" class="ui-state-default"><option value="">-- Select One --</option> </select>
+				<select id="race" class="ui-state-default"> </select>
 				<div class="BBFWidget" race="1">
 					<h3 class="BBFName"> </h3>
 					<p class="BBFDescription"> </p>
@@ -125,14 +126,19 @@ $(document).ready(function() {
 		character.setRace( BBFDb.Races[key] );
 	});
 	
+	var startingRace = character.getRace();
 	for (var raceKey in BBFDb.Races) {
 		var el = document.createElement('option');
-		el.appendChild( document.createTextNode( BBFDb.Races[raceKey].Name ) );
+		var name = BBFDb.Races[raceKey].Name
+		el.appendChild( document.createTextNode( name ) );
 		el.setAttribute('value', raceKey);
+		if (name == startingRace.Name)
+			el.setAttribute('selected', 1);
 		raceList.append(el);
 	}
 	
 	$.bbf.factory(character);
+	changeBaseScores();
 });
 		</script>
 	</body>

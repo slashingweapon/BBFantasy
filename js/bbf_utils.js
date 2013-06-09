@@ -23,13 +23,14 @@ function BBF_Character(rawdata) {
 		BaseDEX: 60,
 		BaseLOG: 55,
 		BaseWIL: 50,
+		BaseDR: 0,
 		STR: 65,
 		DEX: 60,
 		LOG: 55,
 		WIL: 50,
 		PrimarySkill: 'Warrior',
 		SecondarySkill: 'Thief',
-		Race: {	Name: "", Description: "", Specs: {}, Bonuses: [] }
+		Race: $.extend(true, {}, BBFDb.Races.Human)
 	};
 	
 	this.listeners = {};
@@ -39,14 +40,24 @@ function BBF_Character(rawdata) {
 		this.data.DEX = this.data.BaseDEX;
 		this.data.LOG = this.data.BaseLOG;
 		this.data.WIL = this.data.BaseWIL;
-		
+
 		this.data.BP = Math.ceil(this.data.STR / 2);
 		this.data.INIT = 1;
 		if (this.data.LOG >= 65) this.data.INIT += 1;
 		if (this.data.DEX >= 65) this.data.INIT += 1;
 		
+		this.data.MOV = this.data.Race.Specs.Move;
+		this.data.Languages = this.data.Race.Specs.Languages;
+
+		// Find all the sources of various effect bonuses, and apply...
+		for (var idx in this.data.Race.Bonuses) {
+			var bonus = this.data.Race.Bonuses[idx];
+			if (bonus && bonus.Modifiers)
+				this.applyModifiers(bonus.Modifiers);
+		}
+		
 		for (var idx in this.listeners)
-			this.listeners[idx].destination(this);
+			this.listeners[idx].destination(this);		
 	};
 	
 	this.getAttribute = function(name) {
@@ -72,7 +83,7 @@ function BBF_Character(rawdata) {
 	}
 	
 	this.setRace = function(r) {
-		this.data.Race = r;
+		this.data.Race = $.extend(true, {}, r);
 		this.compute();
 	}
 	
@@ -92,10 +103,32 @@ function BBF_Character(rawdata) {
 		};
 	};
 	
+	this.applyModifiers = function(modString) {
+		modString = String(modString);
+		var tokenList = modString.split(" ");
+		var patt = /([a-z]+)(\+|-|\=)([0-9]+)/ig;
+
+		for(var idx in tokenList) {
+			var token = tokenList[idx];
+			var matchInfo = patt.exec(token);
+			// ["STR+10", "STR", "+", "10"]
+			var attr = matchInfo[1];
+			var op = matchInfo[2];
+			var amt = Number(matchInfo[3]);
+			
+			// You can modify a base directly.  Use STR=50 instead.
+			if ( /^Base/.exec(attr) )
+				continue;
+			
+			if (typeof this.data[attr] == "number") {
+				if (op === '+')
+					this.data[attr] += amt;
+				else if (op === '-')
+					this.data[attr] -= amt;
+			}
+		}
+	};
+	
 	this.compute();
-}
-
-BBF_Character.prototype.setRace = function(race) {
-
 }
 

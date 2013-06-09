@@ -12,7 +12,7 @@ BBFDb.Races = {
 			Languages: ["Elven", "Tradespeak"]
 		},
 		Bonuses: [
-			{	Effect: "[LOG+10]" },
+			{	Modifiers: "LOG+10" },
 			{	Name: "Darkvision",
 				Description: "See 12 spaces in darkness, allows normal sight in low-light, as long as a single star is present in the sky." 
 			},
@@ -34,7 +34,7 @@ BBFDb.Races = {
 			Languages: ['Halfling', 'Tradespeak'],
 		},
 		Bonuses: [
-			{	Effect: "[DEX+10]" },
+			{	Modifiers: "DEX+10" },
 			{	Name: "Luck",
 				Description: "Each encounter, re-roll one check."
 			},
@@ -53,12 +53,12 @@ BBFDb.Races = {
 			Languages: ['Anglish', 'Tradespeak'],
 		},
 		Bonuses: [
-			{	Effect: "[WIL+10]" },
+			{	Modifiers: "WIL+10" },
 			{	Name: "Human Versatility",
 				Description: "One additional descriptor"
 			},
 			{	Name: "Human Resilience",
-				Effect: "[RES+10]"
+				Modifiers: "RES+10"
 			}
 		]
 	}
