@@ -128,7 +128,7 @@ function BBF_Character(rawdata) {
 	}
 	
 	this.getSkillChecks = function() {
-		return this.data.SkillChecks;
+		return $.extend(true, {}, this.data.SkillChecks);
 	}
 	
 	this.removeListener = function(dest) {
