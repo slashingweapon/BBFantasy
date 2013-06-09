@@ -28,6 +28,8 @@ function BBF_Character(rawdata) {
 		DEX: 60,
 		LOG: 55,
 		WIL: 50,
+		Skills: {},
+		SkillChecks: {},
 		PrimarySkill: 'Warrior',
 		SecondarySkill: 'Thief',
 		Race: $.extend(true, {}, BBFDb.Races.Human)
@@ -35,6 +37,42 @@ function BBF_Character(rawdata) {
 	
 	this.listeners = {};
 
+	this.computeSkillChecks = function() {
+		this.data.SkillChecks = {};
+		for (var scIndex in BBFDb.SkillChecks) {
+			var checkInfo = {
+				IsPrimary: false,
+				IsSecondary: false,
+				PS: 0,
+				SkillPoints: 0,
+				AbilityScore: 0,
+				Score: 0
+			};
+			$.extend(checkInfo, BBFDb.SkillChecks[scIndex]);
+			
+			checkInfo.SkillPoints = this.data.Skills[checkInfo.Skill];
+			if (checkInfo.SkillPoints == undefined)
+				checkInfo.SkillPoints = 0;
+			
+			// If the skill can't be used without training, and we have no points in it,
+			// then we can stop here and continue with the next iteration.
+			if ( checkInfo.SkillPoints == 0 && checkInfo.UseUntrained == false )
+				continue;
+				
+			checkInfo.AbilityScore = this.data[checkInfo.Ability];
+			if (this.data.PrimarySkill === checkInfo.Skill) {
+				checkInfo.IsPrimary = true;
+				checkInfo.PS = 20;
+			} else if (this.data.SecondarySkill === checkInfo.Skill) {
+				checkInfo.IsSecondary = true;
+				checkInfo.PS = 10;
+			}
+			
+			checkInfo.Score = Math.ceil(checkInfo.AbilityScore/2) + (checkInfo.SkillPoints*10) + checkInfo.PS ;
+			this.data.SkillChecks[scIndex] = checkInfo;
+		}
+	};
+	
 	this.compute = function() {
 		this.data.STR = this.data.BaseSTR;
 		this.data.DEX = this.data.BaseDEX;
@@ -55,6 +93,8 @@ function BBF_Character(rawdata) {
 			if (bonus && bonus.Modifiers)
 				this.applyModifiers(bonus.Modifiers);
 		}
+		
+		this.computeSkillChecks();
 		
 		for (var idx in this.listeners)
 			this.listeners[idx].destination(this);		
@@ -85,6 +125,10 @@ function BBF_Character(rawdata) {
 	this.setRace = function(r) {
 		this.data.Race = $.extend(true, {}, r);
 		this.compute();
+	}
+	
+	this.getSkillChecks = function() {
+		return this.data.SkillChecks;
 	}
 	
 	this.removeListener = function(dest) {

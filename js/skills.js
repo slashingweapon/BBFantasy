@@ -15,56 +15,56 @@ BBFDb.Skills = {
 BBFDb.SkillChecks = {
 	Cleric: {
 		Name: "Cleric",
-		SkillName: "Cleric",
-		Base: "WIL",
+		Skill: "Cleric",
+		Ability: "WIL",
 		UseUntrained: false
 	},
 	Enchanter: {
 		Name: "Enchanter",
-		SkillName: "Enchanter",
-		Base: "LOG",
+		Skill: "Enchanter",
+		Ability: "LOG",
 		UseUntrained: false
 	},
 	Leader: {
 		Name: "Leader",
-		SkillName: "Leader",
-		Base: "WIL",
+		Skill: "Leader",
+		Ability: "WIL",
 		UseUntrained: false
 	},
 	Scholar: {
 		Name: "Scholar",
-		SkillName: "Scholar",
-		Base: "LOG",
+		Skill: "Scholar",
+		Ability: "LOG",
 		UseUntrained: false
 	},
 	Scout: {
 		Name: "Scout",
-		SkillName: "Scout",
-		Base: "LOG",
+		Skill: "Scout",
+		Ability: "LOG",
 		UseUntrained: true
 	},
 	Spellcaster: {
 		Name: "Spellcaster",
-		SkillName: "Spellcaster",
-		Base: "LOG",
+		Skill: "Spellcaster",
+		Ability: "LOG",
 		UseUntrained: false
 	},
 	Thief: {
 		Name: "Thief",
-		SkillName: "Thief",
-		Base: "DEX",
+		Skill: "Thief",
+		Ability: "DEX",
 		UseUntrained: true
 	},
 	Melee: {
 		Name: "Melee",
-		SkillName: "Warrior",
-		Base: "STR",
+		Skill: "Warrior",
+		Ability: "STR",
 		UseUntrained: true
 	},
 	Ranged: {
 		Name: "Ranged",
-		SkillName: "Warrior",
-		Base: "DEX",
+		Skill: "Warrior",
+		Ability: "DEX",
 		UseUntrained: true
 	}
 };
