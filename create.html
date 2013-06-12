@@ -88,13 +88,25 @@
 				</div>
 			</div>
 			<div id="step-skills"> 
-				mad skillzz
+				<h2>Primary Skill</h2>
+				<div class="BBFWidget" BBFType="CoolAttribute" BBFIndex="PrimarySkill" BBFLookup="Skills" BBFTemplate="#st"> </div>
+				<h2>Secondary Skill</h2>
+				<div class="BBFWidget" BBFType="CoolAttribute" BBFIndex="SecondarySkill" BBFLookup="Skills" BBFTemplate="#st"> </div>
+
+				<div class="hidden" id="st">
+					<select BBFDbSelect="Skills" class="ui-state-default"> </select>
+					<h3 BBFField="Name"> </h3>
+					<p BBFField="Description"> </p>
+					<ul BBFRepeat="Uses">
+						<li><strong BBFField="Name"> </strong>: <span BBFField="Description"> </span></li>
+					</ul>
+				</div>
 			</div>
 			<div id="step-description"> 
 				awesomeness, described
 			</div>
 		</div>
-			
+		
 		<script type="text/javascript">
 $(document).ready(function() {
 	var character = new BBF_Character();

@@ -16,6 +16,7 @@ $.bbf = new function() {
 		$(".BBFWidget").each( function() {
 			var je = $(this);
 			var attr = je.attr('attribute');
+			var bbftype = je.attr('BBFType');
 			
 			if (attr !== undefined) {
 				je.AttributeWidget({ character: character, attribute: attr });
@@ -23,6 +24,8 @@ $.bbf = new function() {
 				je.RaceWidget({ character: character });
 			} else if ( je.attr('skillCheck') !== undefined ) {
 				je.SkillCheckWidget({ character: character });
+			} else if (bbftype === 'CoolAttribute') {
+				je.CoolAttribute({ character:character });
 			}
 		});
 	}
@@ -178,5 +181,122 @@ BBF_SkillCheck_Widget = {
 };
 $.widget("bbf.SkillCheckWidget", BBF_SkillCheck_Widget);
 
+BBF_CoolAttribute_Widget = {
+	options: {
+		character: null,
+		indexes: [],
+		lookup: null,
+		template: null,
+		mode: 'read'
+	},
+	
+	_create: function() {
+		this._super();
+
+		var je = this.element;
+		var widget = this;
+		var charObj = this.options.character;
+		var callback = function(obj) {
+			widget.BBF_Update(obj);
+		};
+		
+		this.template = this.element.attr('BBFTemplate');
+		if (this.template !== undefined) {
+			// templates are typically hidden through some means or other.
+			// make a detached copy, show, and throw away the ID
+			this.template = $(this.template).first().clone();
+			this.template.removeClass('hidden').show(); 
+			this.template.removeAttr('id');
+		}
+		
+		var indices = this.element.attr('BBFIndex');
+		if (typeof indices === 'string') {
+			this.options.indexes = indices.split(/\s+/);
+		}
+		
+		var lookup = this.element.attr('BBFLookup');
+		if (typeof lookup === 'string') {
+			this.options.lookup = BBFDb[lookup];
+		}
+		
+		if ( typeof charObj == 'object' && charObj.addListener ) {
+			charObj.addListener(callback, ['attributes']);
+			this.BBF_Update(charObj);
+		}
+	},
+	
+	_destroy: function() {
+		character.removeListener(this);
+		this._super();	
+	},
+
+	BBF_Update: function(charObj) {
+		for (var idx in this.options.indexes) {
+			var Index = this.options.indexes[idx];
+			var Value = charObj.getAttribute(Index);
+			var context = {
+				Key: Index,
+				Value: this.options.lookup ? this.options.lookup[Value] : value,
+				Template: this.template.clone()
+			};
+			this.fill(context);
+			this.element.empty().append( context.Template );
+		}
+	},
+
+	/**	The massive fill function.
+		We have to keep a context stack, a current value (as part of the context), 
+		and do a deep traversal of a subtree.
+	*/
+	fill: function(data) {
+		var widget = this;
+		
+		data.Template.children().each( function(idx) {
+			var elem = $(this);
+			var field = elem.attr('BBFField');
+			if (field !== undefined && data.Value[field] !== undefined)
+				elem.html( data.Value[field] );
+			
+			var repeat = elem.attr('BBFRepeat');
+			if (repeat !== undefined) {
+				var newTemplate = elem.children().detach().wrapAll('<div />');
+				var newValues = data.Value[repeat];
+				if (typeof newValues === 'object') {
+					for (var idx in newValues) {
+						var newContext = $.extend({}, data, {
+							Key: idx,
+							Value: newValues[idx],
+							Template: newTemplate.clone()
+						});
+						widget.fill(newContext);
+						elem.append( newContext.Template );
+					}
+				}
+			}
+			
+			var select = elem.attr('BBFDbSelect');
+			if (select !== undefined) {
+				var source = BBFDb[select];
+				if (typeof source === 'object') {
+					var options = [];
+					for (var idx in source) {
+						var text = source[idx];
+						if (typeof text === 'object' && text.Name !== undefined)
+							text = text.Name;
+						else
+							text = idx;
+						
+						var oneOption = $("<option/>").val(idx).html(text);
+						if (idx === data.Key)
+							oneOption.prop('selected', 1);
+						options.push(oneOption);
+					}
+					elem.empty().append( options );
+				}
+			}
+		});
+	}
+};
+$.widget("bbf.CoolAttribute", BBF_CoolAttribute_Widget);
 
 })(jQuery);
