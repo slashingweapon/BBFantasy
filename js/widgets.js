@@ -186,7 +186,6 @@ BBF_CoolAttribute_Widget = {
 		character: null,
 		indexes: [],
 		lookup: null,
-		template: null,
 		mode: 'read'
 	},
 	
@@ -201,13 +200,10 @@ BBF_CoolAttribute_Widget = {
 		};
 		
 		this.template = this.element.attr('BBFTemplate');
-		if (this.template !== undefined) {
-			// templates are typically hidden through some means or other.
-			// make a detached copy, show, and throw away the ID
-			this.template = $(this.template).first().clone();
-			this.template.removeClass('hidden').show(); 
-			this.template.removeAttr('id');
-		}
+		if (this.template !== undefined)
+			this.template = $(this.template).first().children().clone();
+		else
+			this.template = je.children().detach().clone();
 		
 		var indices = this.element.attr('BBFIndex');
 		if (typeof indices === 'string') {
@@ -235,12 +231,14 @@ BBF_CoolAttribute_Widget = {
 			var Index = this.options.indexes[idx];
 			var Value = charObj.getAttribute(Index);
 			var context = {
+				Attribute: Index,
 				Key: Index,
 				Value: this.options.lookup ? this.options.lookup[Value] : value,
 				Template: this.template.clone()
 			};
-			this.fill(context);
-			this.element.empty().append( context.Template );
+			var tree = this.template.clone();
+			this.fill(tree, context);
+			this.element.empty().append( tree );
 		}
 	},
 
@@ -248,31 +246,23 @@ BBF_CoolAttribute_Widget = {
 		We have to keep a context stack, a current value (as part of the context), 
 		and do a deep traversal of a subtree.
 	*/
-	fill: function(data) {
+	fill: function(tree, data) {
 		var widget = this;
 		
-		data.Template.children().each( function(idx) {
+		tree.each( function(idx) {
 			var elem = $(this);
+			
 			var field = elem.attr('BBFField');
 			if (field !== undefined && data.Value[field] !== undefined)
 				elem.html( data.Value[field] );
 			
-			var repeat = elem.attr('BBFRepeat');
-			if (repeat !== undefined) {
-				var newTemplate = elem.children().detach().wrapAll('<div />');
-				var newValues = data.Value[repeat];
-				if (typeof newValues === 'object') {
-					for (var idx in newValues) {
-						var newContext = $.extend({}, data, {
-							Key: idx,
-							Value: newValues[idx],
-							Template: newTemplate.clone()
-						});
-						widget.fill(newContext);
-						elem.append( newContext.Template );
-					}
-				}
-			}
+			var bbfIndex = elem.attr('BBFIndex');
+			if (bbfIndex !== undefined)
+				elem.append(data.Key);
+			
+			var bbfValue = elem.attr('BBFValue');
+			if (bbfValue !== undefined)
+				elem.append(data.Value);
 			
 			var select = elem.attr('BBFDbSelect');
 			if (select !== undefined) {
@@ -288,12 +278,33 @@ BBF_CoolAttribute_Widget = {
 						
 						var oneOption = $("<option/>").val(idx).html(text);
 						if (idx === data.Key)
-							oneOption.prop('selected', 1);
+							oneOption.addAttr('selected');
 						options.push(oneOption);
 					}
-					elem.empty().append( options );
+					elem.append( options );
 				}
 			}
+
+			var repeat = elem.attr('BBFRepeat');
+			if (repeat !== undefined) {
+				var newTemplate = elem.children().detach();
+				var newValues = data.Value[repeat];
+				if (typeof newValues === 'object') {
+					for (var idx in newValues) {
+						var newContext = $.extend({}, data, {
+							Key: idx,
+							Value: newValues[idx],
+							Template: newTemplate.clone()
+						});
+						var newTree = newTemplate.clone();
+						widget.fill(newTree, newContext);
+						elem.append( newTree );
+					}
+				}
+			} else if (elem.children().size()>0) {
+				widget.fill(elem.children(), data);
+			}
+			
 		});
 	}
 };

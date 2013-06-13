@@ -24,6 +24,7 @@
 			#scores .ui-icon { float:right; }
 			.BBFLabel { font-weight: bold; margin-right: .5em; }
 			.BBFValue { margin-right: 1em; }
+			.hidden { display:none; }
 		</style>
 	</head>
 	<body>
@@ -94,9 +95,11 @@
 				<div class="BBFWidget" BBFType="CoolAttribute" BBFIndex="SecondarySkill" BBFLookup="Skills" BBFTemplate="#st"> </div>
 
 				<div class="hidden" id="st">
-					<select BBFDbSelect="Skills" class="ui-state-default"> </select>
-					<h3 BBFField="Name"> </h3>
-					<p BBFField="Description"> </p>
+					<form BBFForm>
+						<select BBFDbSelect="Skills" class="ui-state-default"> </select>
+					</form>
+					<h3 BBFField="Name"> Derp</h3>
+					<p BBFField="Description"> All the derps</p>
 					<ul BBFRepeat="Uses">
 						<li><strong BBFField="Name"> </strong>: <span BBFField="Description"> </span></li>
 					</ul>
