@@ -277,14 +277,24 @@ BBF_CoolAttribute_Widget = {
 							text = idx;
 						
 						var oneOption = $("<option/>").val(idx).html(text);
-						if (idx === data.Key)
-							oneOption.addAttr('selected');
+						if (idx === widget.options.character.getAttribute(data.Key))
+							oneOption.attr('selected', 1);
 						options.push(oneOption);
 					}
 					elem.append( options );
 				}
 			}
 
+			if (elem.is('form')) {
+				var edat = $.extend({}, data);
+				elem.on('submit', edat, function(evt) {
+					return widget._formEvents($(this), evt);
+				});
+				elem.on('change', '.BBFInput', edat, function(evt) {
+					return widget._formEvents($(this), evt);
+				});
+			}
+			
 			var repeat = elem.attr('BBFRepeat');
 			if (repeat !== undefined) {
 				var newTemplate = elem.children().detach();
@@ -306,6 +316,15 @@ BBF_CoolAttribute_Widget = {
 			}
 			
 		});
+	},
+	
+	_formEvents: function(elem, event) {
+		if (event.data.Attribute !== undefined) {
+			if (elem.is('.BBFInput')) {
+				this.options.character.setAttribute(event.data.Attribute, elem.val());
+				this.options.character.compute();
+			}
+		}
 	}
 };
 $.widget("bbf.CoolAttribute", BBF_CoolAttribute_Widget);
