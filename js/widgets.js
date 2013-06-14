@@ -7,8 +7,64 @@
  *
  *	requires:
  *		jquery-ui 1.9+
+ *		dust.js
  */
 (function($) {
+
+// At docready time, read all of the text/html scripts that have IDs, and compile them
+// for rendering by dust.js.
+$(document).ready( function() {
+	dust.helpers.iter = function(chunk, context, bodies, params) {
+        var obj = params['for'] || context.current();
+
+		if (typeof obj === 'object') {
+	        for (var k in obj)
+    	        chunk = chunk.render(bodies.block, context.push({key: k, value: obj[k]}));
+		} else {
+			if (bodies['else'])
+				chunk = chunk.render(bodies['scalar'], context);
+		}
+			
+        return chunk;
+    };
+
+	dust.helpers.scalar = function(chunk, context, bodies, params) {
+		console.log(params);
+		console.log(context.current());
+		
+		if (params && params['value'])
+			obj = params['value'];
+		else
+			obj = context.current();
+		var objType = typeof obj;
+		
+		if (objType === 'string' || objType === 'number' || objType === 'boolean') {
+			chunk = chunk.render(bodies.block, context);
+		} else {
+			chunk = chunk.render(bodies['else'], context);
+		}
+			
+        return chunk;
+    };
+
+	$("script[type='text/html']").each( function() {
+		if (this.id)
+			dust.compileFn(this.childNodes[0].nodeValue, this.id);
+	});
+});
+	
+function getRelatedAttributes(elem) {
+	var retval = {};
+	
+	if (elem instanceof jQuery)
+		elem = elem.get(0);
+	for(var idx in elem.attributes) {
+		if (idx.match(/^bbf[A-Z]/))
+			retval[idx] = elem.attributes[idx];
+	}
+	
+	return retval;
+}
 
 $.bbf = new function() {
 
@@ -26,6 +82,8 @@ $.bbf = new function() {
 				je.SkillCheckWidget({ character: character });
 			} else if (bbftype === 'CoolAttribute') {
 				je.CoolAttribute({ character:character });
+			} else if ( je.attr('BBFBase') !== undefined ) {
+				je.BaseWidget({ character: character });
 			}
 		});
 	}
@@ -222,7 +280,7 @@ BBF_CoolAttribute_Widget = {
 	},
 	
 	_destroy: function() {
-		character.removeListener(this);
+		this.options.character.removeListener(this);
 		this._super();	
 	},
 
@@ -328,5 +386,74 @@ BBF_CoolAttribute_Widget = {
 	}
 };
 $.widget("bbf.CoolAttribute", BBF_CoolAttribute_Widget);
+
+/**
+ *	BBFAttribute | BBFSkillChecks | BBFSkills | BBFConditions | BBFNotes
+ *		bbfValue='@Attribute'
+ *		bbfValue='@Score'
+ *		bbfRepeat='@Db.Skills'
+ *		bbfIf='path' (readmode|writemode|something)
+ *		bbfIfNot='path'
+ *		bbfRepeat='path'
+ *		bbfForm
+ *		bbfInput
+ *		<input bbfName='_path_' bbfValue='_path_' bbfInput/>
+ */
+BBF_BaseWidget = {
+	options: {
+		character: null,
+		mode: 'read'
+	},
+
+	_create: function() {
+		this._super();
+		
+		var widget = this;
+		
+		this.template = this.element.attr('bbf-template');
+		
+		var character = this.options.character;
+		if ( typeof character === 'object' && character.addListener === 'function' )
+			this.options.character.addListener( function(chob) {
+				widget._update(chob);
+			});
+		
+		this.render();
+	},
+		
+	_destroy: function() {
+		this.options.character.removeListener(this);
+		this._super();	
+	},
+	
+	render: function() {
+		this._update( this.options.character );
+	},
+	
+	_update: function(character) {
+		var widget = this;
+		var context = {
+			Character: character,
+			Db: BBFDb,
+			ReadMode: this.options.mode == 'read' ? true : false,
+			WriteMode: this.options.mode != 'read' ? true : false,
+			Obj: {a:'cool', b:'sweet', c:'lately'},
+			Things: ['a', 'b', 'c'],
+			Scalar: 'arrrr'
+		};
+		
+		dust.render(this.template, context, function(err, out) {
+			if (err)
+				alert(err);
+			widget.element.empty().html(out);
+		});
+	},
+	
+	_formEvents: function(elem, event) {
+		return false;
+	}
+	
+}
+$.widget('bbf.BaseWidget', BBF_BaseWidget);
 
 })(jQuery);

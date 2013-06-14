@@ -6,6 +6,7 @@
 		<script type="text/javascript" src="js/jquery.js"> </script>
 		<script type="text/javascript" src="js/jquery-ui.js"> </script>
 		<script type="text/javascript" src="js/jsrender.js"> </script>
+		<script type="text/javascript" src="js/dust-full-0.3.0.js"> </script>
 		<script type="text/javascript" src="js/races.js"> </script>
 		<script type="text/javascript" src="js/skills.js"> </script>
 		<script type="text/javascript" src="js/bbf_utils.js"> </script>
@@ -105,7 +106,34 @@
 				</div>
 			</div>
 			<div id="step-description"> 
-				awesomeness, described
+				<div class="BBFWidget" BBFBase bbf-template="base"> </div>
+				
+				<script type="text/html" id="base">
+					Things:
+					<ul>{#Things}
+						<li><strong>{.}</strong></li>
+					{/Things} </ul>
+					Object:
+					<ul>{@iter for=Obj}
+						<li><strong>{key}</strong> - {value}</li>
+					{/iter}</ul>
+					Everything:
+					{>everything/}
+				</script>
+				
+				<script type="text/html" id="everything">
+					<ul>{@iter hu="1"}
+						<li>
+							<strong>{key}</strong> 
+							{@scalar:value}
+								- {.}
+							{:else}
+								{>everything/}
+							{/scalar}
+						</li>
+					{/iter}</ul>
+				</script>
+
 			</div>
 		</div>
 		
