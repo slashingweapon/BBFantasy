@@ -15,35 +15,31 @@
 // for rendering by dust.js.
 $(document).ready( function() {
 	dust.helpers.iter = function(chunk, context, bodies, params) {
-        var obj = params['for'] || context.current();
-
-		if (typeof obj === 'object') {
+		var obj = (params && params['for']) ? params['for'] : context.current();
+		var objType = typeof obj;
+		
+		if (objType === 'object') {
 	        for (var k in obj)
     	        chunk = chunk.render(bodies.block, context.push({key: k, value: obj[k]}));
-		} else {
-			if (bodies['else'])
-				chunk = chunk.render(bodies['scalar'], context);
+		} else if (bodies['scalar']) {
+			if (objType === 'function')
+				obj = 'function';
+			chunk = chunk.render(bodies['scalar'], context.push(obj));
 		}
 			
         return chunk;
     };
 
-	dust.helpers.scalar = function(chunk, context, bodies, params) {
-		console.log(params);
-		console.log(context.current());
-		
-		if (params && params['value'])
-			obj = params['value'];
-		else
-			obj = context.current();
+	dust.helpers.scalar = function(chunk, context, bodies, params) {		
+		var obj = (params && params['value']) ? params['value'] : context.current();
 		var objType = typeof obj;
 		
 		if (objType === 'string' || objType === 'number' || objType === 'boolean') {
 			chunk = chunk.render(bodies.block, context);
-		} else {
+		} else if (bodies['else']) {
 			chunk = chunk.render(bodies['else'], context);
 		}
-			
+		
         return chunk;
     };
 

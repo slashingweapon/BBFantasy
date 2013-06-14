@@ -118,20 +118,19 @@
 						<li><strong>{key}</strong> - {value}</li>
 					{/iter}</ul>
 					Everything:
-					{>everything/}
+					{>everything:Db/}
 				</script>
 				
 				<script type="text/html" id="everything">
-					<ul>{@iter hu="1"}
-						<li>
-							<strong>{key}</strong> 
-							{@scalar:value}
-								- {.}
-							{:else}
-								{>everything/}
-							{/scalar}
-						</li>
-					{/iter}</ul>
+					{@scalar}
+						{.}
+					{:else}
+						<ul>{@iter}
+							<li>
+								<strong>{key}</strong> {>everything:value/}
+							</li>
+						{/iter}</ul>
+					{/scalar}
 				</script>
 
 			</div>
