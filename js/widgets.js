@@ -80,6 +80,8 @@ $.bbf = new function() {
 				je.CoolAttribute({ character:character });
 			} else if ( je.attr('BBFBase') !== undefined ) {
 				je.BaseWidget({ character: character });
+			} else if ( je.attr('BBFSkills') !== undefined ) {
+				je.SkillsWidget({ character: character });
 			}
 		});
 	}
@@ -427,7 +429,6 @@ BBF_BaseWidget = {
 	},
 	
 	_update: function(character) {
-		var widget = this;
 		var context = {
 			Character: character,
 			Db: BBFDb,
@@ -438,18 +439,62 @@ BBF_BaseWidget = {
 			Scalar: 'arrrr'
 		};
 		
+		this._draw( context );
+	},
+
+	_draw: function(context) {
+		var widget = this;
 		dust.render(this.template, context, function(err, out) {
 			if (err)
 				alert(err);
 			widget.element.empty().html(out);
 		});
 	},
-	
+		
 	_formEvents: function(elem, event) {
 		return false;
 	}
 	
-}
+};
 $.widget('bbf.BaseWidget', BBF_BaseWidget);
+
+BBF_SkillsWidget = {
+	options: {},
+
+	_create: function() {
+		this._super();
+		var widget = this;
+		
+		this.element.on('change', '.bbf-input', function(evt) {
+			var form = $(this).closest('form').serializeArray();
+			var skilz = {};
+			if (!form)
+				form = {};
+			
+			for (var idx in form) {
+				var name = form[idx].name;
+				var level = parseInt(form[idx].value);
+				if (level > 0)
+					skilz[name] = level;
+			}
+							
+			widget.options.character.data.Skills = skilz;
+			widget.options.character.compute();
+		});
+	},
+		
+	_update: function(character) {
+		var context = {
+			Character: character.data,
+			Db: BBFDb,
+			ReadMode: this.options.mode == 'read' ? true : false,
+			WriteMode: this.options.mode != 'read' ? true : false,
+			Skills: character.getSkills()
+		};
+		
+		this._draw(context);
+	}
+};
+$.widget('bbf.SkillsWidget', $.bbf.BaseWidget, BBF_SkillsWidget);
 
 })(jQuery);

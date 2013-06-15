@@ -127,6 +127,10 @@ function BBF_Character(rawdata) {
 		this.compute();
 	}
 	
+	this.getSkills = function() {
+		return this.data.Skills;
+	}
+	
 	this.getSkillChecks = function() {
 		return $.extend(true, {}, this.data.SkillChecks);
 	}

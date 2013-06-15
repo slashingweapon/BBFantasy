@@ -28,6 +28,19 @@
 			.BBFValue { margin-right: 1em; }
 			.hidden { display:none; }
 		</style>
+
+		<script type="text/html" id="everything">
+			{@scalar}
+				{.}
+			{:else}
+				<ul>{@iter}
+					<li>
+						<strong>{key}</strong> {>everything:value/}
+					</li>
+				{/iter}</ul>
+			{/scalar}
+		</script>
+
 	</head>
 	<body>
 		<h3>Effective Scores</h3>
@@ -91,9 +104,23 @@
 				</div>
 			</div>
 			<div id="step-skills"> 
-				<h2>Primary Skill</h2>
+				<div class="BBFWidget" BBFSkills bbf-template="selectSkills"> </div>
+				<script type="text/html" id="selectSkills">
+					<h2>Apply Your Skill Points (Max 1)</h2>
+					
+					<form>
+						{@iter for=Db.Skills}
+							<input type="checkbox" name="{key}" value="1" id="sklz_{key}" class="ui-state-default bbf-input"
+								{@eq key="Skills.{value}" value=value}checked{/eq} />
+							<label for="sklz_{key}">{value.Name}</label>
+							<br/>
+						{/iter}
+					</form>
+				</script>
+				
+				<h2>Choose a Primary Skill (+20)</h2>
 				<div class="BBFWidget" BBFType="CoolAttribute" BBFIndex="PrimarySkill" BBFLookup="Skills" BBFTemplate="#st"> </div>
-				<h2>Secondary Skill</h2>
+				<h2>Choose a Secondary Skill (+10)</h2>
 				<div class="BBFWidget" BBFType="CoolAttribute" BBFIndex="SecondarySkill" BBFLookup="Skills" BBFTemplate="#st"> </div>
 
 				<div class="hidden" id="st">
@@ -122,18 +149,6 @@
 					{>everything:Db/}
 				</script>
 				
-				<script type="text/html" id="everything">
-					{@scalar}
-						{.}
-					{:else}
-						<ul>{@iter}
-							<li>
-								<strong>{key}</strong> {>everything:value/}
-							</li>
-						{/iter}</ul>
-					{/scalar}
-				</script>
-
 			</div>
 		</div>
 		
