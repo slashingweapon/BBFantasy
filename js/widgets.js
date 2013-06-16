@@ -80,8 +80,10 @@ $.bbf = new function() {
 				je.CoolAttribute({ character:character });
 			} else if ( je.attr('BBFBase') !== undefined ) {
 				je.BaseWidget({ character: character });
-			} else if ( je.attr('BBFSkills') !== undefined ) {
-				je.SkillsWidget({ character: character });
+			} else if ( je.attr('bbf-skill') !== undefined ) {
+				je.Skills({ character: character });
+			} else if ( je.attr('bbf-attribute') !== undefined ) {
+				je.Attribute({ character: character });
 			}
 		});
 	}
@@ -411,7 +413,7 @@ BBF_BaseWidget = {
 		this.template = this.element.attr('bbf-template');
 		
 		var character = this.options.character;
-		if ( typeof character === 'object' && character.addListener === 'function' )
+		if ( typeof character === 'object' && typeof character.addListener === 'function' )
 			this.options.character.addListener( function(chob) {
 				widget._update(chob);
 			});
@@ -442,13 +444,20 @@ BBF_BaseWidget = {
 		this._draw( context );
 	},
 
-	_draw: function(context) {
+	_draw: function(contexts) {
 		var widget = this;
-		dust.render(this.template, context, function(err, out) {
-			if (err)
-				alert(err);
-			widget.element.empty().html(out);
-		});
+		if (! $.isArray(contexts))
+			contexts = [contexts];
+
+		widget.element.empty();		
+		for (var idx in contexts) {
+			var ctx = contexts[idx];
+			dust.render(this.template, ctx, function(err, out) {
+				if (err)
+					alert(err);
+				widget.element.append(out);
+			});
+		}
 	},
 		
 	_formEvents: function(elem, event) {
@@ -458,43 +467,102 @@ BBF_BaseWidget = {
 };
 $.widget('bbf.BaseWidget', BBF_BaseWidget);
 
+BBF_AttributeWidget = {
+	options: {
+		'attributes': []
+	},
+	
+	_create: function() {
+		this._super();
+		var widget = this;
+		
+		var indices = this.element.attr('bbf-attribute');
+		if (typeof indices === 'string') {
+			this.options.attributes = indices.split(/\s+/);
+		}
+		
+		this.element.on('change', '.bbf-input', function(evt) {
+			var elem = $(this);
+			var nm = elem.attr('name');
+			if (nm !== undefined)
+				widget.options.character.setAttribute(nm, elem.val());
+			return false;
+		});
+	},
+	
+	_update: function(character) {
+		var clist = [];
+		
+		for (var idx in this.options.attributes) {
+			var context = {
+				Character: character.data,
+				Db: BBFDb,
+				ReadMode: this.options.mode == 'read' ? true : false,
+				WriteMode: this.options.mode != 'read' ? true : false,
+			};
+			context.AttributeName = this.options.attributes[idx];
+			context.AttributeValue = this.options.character.getAttribute(context.AttributeName);
+			clist.push(context);
+		}
+		this._draw(clist);		
+	}
+};
+$.widget('bbf.Attribute',  $.bbf.BaseWidget, BBF_AttributeWidget);
+
 BBF_SkillsWidget = {
-	options: {},
+	options: {
+		skills: []
+	},
 
 	_create: function() {
 		this._super();
 		var widget = this;
 		
-		this.element.on('change', '.bbf-input', function(evt) {
+		var indices = this.element.attr('bbf-skill');
+		if (typeof indices === 'string') {
+			if (indices === '*')
+				this.options.skills = objKeys(BBFDb.Skills);
+			else
+				this.options.skills = indices.split(/\s+/);
+		}
+		
+ 		this.element.on('change', '.bbf-input', function(evt) {
 			var form = $(this).closest('form').serializeArray();
 			var skilz = {};
 			if (!form)
 				form = {};
-			
+ 			
 			for (var idx in form) {
 				var name = form[idx].name;
 				var level = parseInt(form[idx].value);
 				if (level > 0)
 					skilz[name] = level;
-			}
+ 			}
 							
 			widget.options.character.data.Skills = skilz;
 			widget.options.character.compute();
-		});
+ 		});
 	},
 		
 	_update: function(character) {
+		var cskills = this.options.character.getSkills();
 		var context = {
 			Character: character.data,
 			Db: BBFDb,
 			ReadMode: this.options.mode == 'read' ? true : false,
 			WriteMode: this.options.mode != 'read' ? true : false,
-			Skills: character.getSkills()
+			Skills: []
 		};
-		
+
+		for (var idx in this.options.skills) {
+			var skillName = this.options.skills[idx];
+			var newSkill = $.extend({}, BBFDb.Skills[skillName]);
+			newSkill.Score = parseInt(cskills[skillName]);
+			context.Skills.push(newSkill);
+		}		
 		this._draw(context);
 	}
 };
-$.widget('bbf.SkillsWidget', $.bbf.BaseWidget, BBF_SkillsWidget);
+$.widget('bbf.Skills', $.bbf.BaseWidget, BBF_SkillsWidget);
 
 })(jQuery);

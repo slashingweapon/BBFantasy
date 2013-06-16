@@ -15,10 +15,20 @@ function uid() {
 	return '' + m.valueOf() + '.' + Math.floor(Math.random()*1000000);
 }
 
+function objKeys(obj) {
+	var retval = [];
+	
+	for (var idx in obj)
+		retval.push(idx);
+		
+	return retval;
+}
+
 function BBF_Character(rawdata) {
 	
 	this.data = {
 		Version: 0,
+		Name: "",
 		BaseSTR: 65,
 		BaseDEX: 60,
 		BaseLOG: 55,

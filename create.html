@@ -24,8 +24,8 @@
 				text-align: center; 
 			}
 			#scores .ui-icon { float:right; }
-			.BBFLabel { font-weight: bold; margin-right: .5em; }
-			.BBFValue { margin-right: 1em; }
+			.BBFLabel, .attrLabel { font-weight: bold; margin-right: .5em; }
+			.BBFValue, .attrValue { margin-right: 1em; }
 			.hidden { display:none; }
 		</style>
 
@@ -43,18 +43,13 @@
 
 	</head>
 	<body>
+		<script type="text/html" id="attributeDisplay">
+			<span class="attribute"><span class="attrLabel">{AttributeName}</span><span class="attrValue">{AttributeValue}</span></span>
+		</script>
+
 		<h3>Effective Scores</h3>
-		<p>
-			<span class="BBFWidget" attribute="STR"><span class="BBFLabel"> </span><span class="BBFValue"> </span></span>
-			<span class="BBFWidget" attribute="DEX"><span class="BBFLabel"> </span><span class="BBFValue"> </span></span>
-			<span class="BBFWidget" attribute="LOG"><span class="BBFLabel"> </span><span class="BBFValue"> </span></span>
-			<span class="BBFWidget" attribute="WIL"><span class="BBFLabel"> </span><span class="BBFValue"> </span></span>
-		</p>
-		<p>
-			<span class="BBFWidget" attribute="BP"><span class="BBFLabel"> </span><span class="BBFValue"> </span></span>
-			<span class="BBFWidget" attribute="INIT"><span class="BBFLabel"> </span><span class="BBFValue"> </span></span>
-			<span class="BBFWidget" attribute="MOV"><span class="BBFLabel"> </span><span class="BBFValue"> </span></span>
-		</p>
+		<p class="BBFWidget" bbf-attribute="STR DEX LOG WIL" bbf-template="attributeDisplay"> </p>
+		<p class="BBFWidget" bbf-attribute="BP INIT MOV" bbf-template="attributeDisplay"> </p>
 		
 		<h3>Skill Checks</h3>
 		<div class="BBFWidget" skillCheck="*" template="#sk">
@@ -104,17 +99,16 @@
 				</div>
 			</div>
 			<div id="step-skills"> 
-				<div class="BBFWidget" BBFSkills bbf-template="selectSkills"> </div>
+				<div class="BBFWidget" bbf-skill='*' bbf-template="selectSkills"> </div>
 				<script type="text/html" id="selectSkills">
 					<h2>Apply Your Skill Points (Max 1)</h2>
-					
 					<form>
-						{@iter for=Db.Skills}
-							<input type="checkbox" name="{key}" value="1" id="sklz_{key}" class="ui-state-default bbf-input"
-								{@eq key="Skills.{value}" value=value}checked{/eq} />
-							<label for="sklz_{key}">{value.Name}</label>
+						{#Skills}
+							<input type="checkbox" name="{Name}" value="1" id="sklz_{Name}" class="ui-state-default bbf-input"
+								{@eq key="{Score}" value="1"}checked{/eq} />
+							<label for="sklz_{Name}">{Name}</label>
 							<br/>
-						{/iter}
+						{/Skills}
 					</form>
 				</script>
 				
@@ -134,17 +128,16 @@
 				</div>
 			</div>
 			<div id="step-description"> 
-				<div class="BBFWidget" BBFBase bbf-template="base"> </div>
+				<div class="BBFWidget" bbf-attribute="Name" bbf-template="nameAttribute"> </div>
+				<script type="text/html" id="nameAttribute">
+					<p>	<form class="bbf-form">
+						<label for="nameattr"><strong>{AttributeName}:</strong></label>
+						<input type="text" class="ui-state-default bbf-input" name="{AttributeName}" value="{AttributeValue}"/>
+					</form> </p>
+				</script>
 				
+				<div class="BBFWidget" BBFBase bbf-template="base"> </div>	
 				<script type="text/html" id="base">
-					Things:
-					<ul>{#Things}
-						<li><strong>{.}</strong></li>
-					{/Things} </ul>
-					Object:
-					<ul>{@iter for=Obj}
-						<li><strong>{key}</strong> - {value}</li>
-					{/iter}</ul>
 					Everything:
 					{>everything:Db/}
 				</script>
