@@ -87,6 +87,7 @@ $.bbf = new function() {
 			}
 		});
 	}
+	
 };
 
 BBF_Attribute_Widget = {
@@ -541,26 +542,30 @@ BBF_SkillsWidget = {
 							
 			widget.options.character.data.Skills = skilz;
 			widget.options.character.compute();
+			
+			return false;
  		});
 	},
 		
 	_update: function(character) {
+		var contexts = [];
 		var cskills = this.options.character.getSkills();
-		var context = {
-			Character: character.data,
-			Db: BBFDb,
-			ReadMode: this.options.mode == 'read' ? true : false,
-			WriteMode: this.options.mode != 'read' ? true : false,
-			Skills: []
-		};
 
 		for (var idx in this.options.skills) {
-			var skillName = this.options.skills[idx];
-			var newSkill = $.extend({}, BBFDb.Skills[skillName]);
-			newSkill.Score = parseInt(cskills[skillName]);
-			context.Skills.push(newSkill);
+			var sname = this.options.skills[idx];
+			
+			var context = {
+				Character: character.data,
+				Db: BBFDb,
+				ReadMode: this.options.mode == 'read' ? true : false,
+				WriteMode: this.options.mode != 'read' ? true : false,
+				Skill: BBFDb.Skills[sname],
+				Score: parseInt(cskills[sname])
+			};
+			
+			contexts.push(context);
 		}		
-		this._draw(context);
+		this._draw(contexts);
 	}
 };
 $.widget('bbf.Skills', $.bbf.BaseWidget, BBF_SkillsWidget);

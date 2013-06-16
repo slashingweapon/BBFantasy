@@ -99,17 +99,15 @@
 				</div>
 			</div>
 			<div id="step-skills"> 
-				<div class="BBFWidget" bbf-skill='*' bbf-template="selectSkills"> </div>
+				<h2>Apply Your Skill Points (Max 1)</h2>
+				<form>
+					<span class="BBFWidget" bbf-skill='*' bbf-template="selectSkills"> </span>
+				</form>
 				<script type="text/html" id="selectSkills">
-					<h2>Apply Your Skill Points (Max 1)</h2>
-					<form>
-						{#Skills}
-							<input type="checkbox" name="{Name}" value="1" id="sklz_{Name}" class="ui-state-default bbf-input"
-								{@eq key="{Score}" value="1"}checked{/eq} />
-							<label for="sklz_{Name}">{Name}</label>
-							<br/>
-						{/Skills}
-					</form>
+					<input type="checkbox" name="{Skill.Name}" value="1" id="sklz_{Skill.Name}" class="ui-state-default bbf-input"
+						{@eq key="{Score}" value="1"}checked{/eq} />
+					<label for="sklz_{Skill.Name}">{Skill.Name}</label>
+					<br/>
 				</script>
 				
 				<h2>Choose a Primary Skill (+20)</h2>
